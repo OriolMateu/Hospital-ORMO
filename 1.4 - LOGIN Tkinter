@@ -1,0 +1,49 @@
+import tkinter as tk
+import bcrypt
+
+intentos = 0
+
+def login():
+    global intentos
+
+    user = entry_user.get()
+    pwd = entry_pass.get()
+
+    conn = conectar()
+    cur = conn.cursor()
+
+    cur.execute("SELECT password, rol FROM usuarios WHERE username=%s", (user,))
+    result = cur.fetchone()
+
+    conn.close()
+
+    if result:
+        hashed, rol = result
+
+        if bcrypt.checkpw(pwd.encode(), hashed.encode() if isinstance(hashed, str) else hashed):
+            label_result.config(text=f"Login correcto ({rol})")
+        else:
+            intentos += 1
+            label_result.config(text="Password incorrecta")
+    else:
+        intentos += 1
+        label_result.config(text="Usuario no existe")
+
+    if intentos >= 3:
+        label_result.config(text="Bloqueado por intentos")
+
+# UI
+root = tk.Tk()
+
+entry_user = tk.Entry(root)
+entry_user.pack()
+
+entry_pass = tk.Entry(root, show="*")
+entry_pass.pack()
+
+tk.Button(root, text="Login", command=login).pack()
+
+label_result = tk.Label(root)
+label_result.pack()
+
+root.mainloop()

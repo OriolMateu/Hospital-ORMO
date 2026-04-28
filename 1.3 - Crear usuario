@@ -1,0 +1,15 @@
+import bcrypt
+
+def crear_usuario(username, password, rol):
+    conn = conectar()
+    cur = conn.cursor()
+
+    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
+
+    cur.execute("""
+        INSERT INTO usuarios (username, password, rol)
+        VALUES (%s, %s, %s)
+    """, (username, hashed, rol))
+
+    conn.commit()
+    conn.close()
